@@ -1,0 +1,224 @@
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Io
+import Quickshell.Wayland
+import Quickshell.Hyprland
+import qs.services
+import qs.dashboard
+import qs.dashboard.panels
+
+PanelWindow {
+    id: dashboard
+
+    property bool surfaceVisible: false
+    visible: surfaceVisible
+
+    property real openProgress: 0
+    readonly property real fullHeight: 560
+
+    Connections {
+        target: States
+        function onDashboardOpenChanged() {
+            if (States.dashboardOpen) {
+                dashboard.surfaceVisible = true;
+                openAnim.start();
+            } else {
+                closeAnim.start();
+            }
+        }
+    }
+
+    SequentialAnimation {
+        id: openAnim
+        NumberAnimation {
+            target: dashboard
+            property: "openProgress"
+            to: 1
+            duration: 380
+            easing.type: Easing.OutBack
+            easing.overshoot: 1.4
+        }
+        ScriptAction {
+            script: focus_grab.active = true
+        }
+    }
+
+    SequentialAnimation {
+        id: closeAnim
+        ScriptAction {
+            script: focus_grab.active = false
+        }
+        NumberAnimation {
+            target: dashboard
+            property: "openProgress"
+            to: 0
+            duration: 220
+            easing.type: Easing.InQuad
+        }
+        ScriptAction {
+            script: dashboard.surfaceVisible = false
+        }
+    }
+
+    anchors {
+        top: true
+    }
+    margins {
+        top: Metrics.bar_margin_top + Metrics.bar_height
+    }
+
+    color: "transparent"
+    implicitWidth: Metrics.panelMaxWidth + 80
+    implicitHeight: Metrics.panelMaxHeight + 40
+    exclusionMode: ExclusionMode.Ignore
+    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.keyboardFocus: States.dashboardOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+
+    IpcHandler {
+        target: "dashboard"
+        function toggle(): void {
+            States.toggle();
+        }
+        function open(): void {
+            States.open();
+        }
+        function close(): void {
+            States.close();
+        }
+    }
+
+    HyprlandFocusGrab {
+        id: focus_grab
+        windows: [dashboard]
+    }
+
+    Item {
+        id: revealWrapper
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: panelBody.width + 48
+        height: panelBody.height * dashboard.openProgress
+        clip: true
+
+        Rectangle {
+            id: panelBody
+            anchors.top: parent.top
+            anchors.horizontalCenter: parent.horizontalCenter
+
+            readonly property real contentWidth: panelLoader.item?.implicitWidth ?? Metrics.panelSizes.apps.width
+            readonly property real contentHeight: panelLoader.item?.implicitHeight ?? Metrics.panelSizes.apps.height
+            readonly property real targetWidth: Math.min(Math.max(contentWidth, Metrics.panelMinWidth), dashboard.width - 80)
+            readonly property real targetHeight: Math.min(Math.max(contentHeight + Metrics.switcherReserve, Metrics.panelMinHeight), dashboard.height - 16)
+            width: targetWidth
+            height: targetHeight
+            opacity: dashboard.openProgress
+
+            Behavior on width {
+                SpringAnimation {
+                    spring: 3.2
+                    damping: 0.3
+                    mass: 1
+                    epsilon: 0.25
+                }
+            }
+            Behavior on height {
+                SpringAnimation {
+                    spring: 3.2
+                    damping: 0.3
+                    mass: 1
+                    epsilon: 0.25
+                }
+            }
+
+            bottomLeftRadius: 24
+            bottomRightRadius: 24
+            color: Colors.md3.surface_container
+            clip: false
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 10
+                spacing: 8
+                Loader {
+                    id: panelLoader
+                    asynchronous: true
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    sourceComponent: {
+                        switch (States.active_panel) {
+                        case 0:
+                            return appLauncherPanel;
+                        case 1:
+                            return wallpaperPanel;
+                        case 2:
+                            return systemInfoPanel;
+                        case 3:
+                            return musicPanel;
+                        default:
+                            return appLauncherPanel;
+                        }
+                    }
+                    onLoaded: {
+                        item.opacity = 0;
+                        item.y = 12;
+                        panelEnter.start();
+                    }
+                    SequentialAnimation {
+                        id: panelEnter
+                        ParallelAnimation {
+                            NumberAnimation {
+                                target: panelLoader.item
+                                property: "opacity"
+                                to: 1
+                                duration: 220
+                                easing.type: Easing.OutQuad
+                            }
+                            NumberAnimation {
+                                target: panelLoader.item
+                                property: "y"
+                                to: 0
+                                duration: 320
+                                easing.type: Easing.OutBack
+                                easing.overshoot: 1.5
+                            }
+                        }
+                    }
+                }
+                Switcher {}
+            }
+
+            Component {
+                id: appLauncherPanel
+                AppLauncher {}
+            }
+            Component {
+                id: wallpaperPanel
+                Wallpaper {}
+            }
+            Component {
+                id: systemInfoPanel
+                SysInfo {}
+            }
+            Component {
+                id: musicPanel
+                Music {}
+            }
+        }
+
+        Corners {
+            corner: 1
+            r: 24
+            fillColor: panelBody.color
+            anchors.top: panelBody.top
+            anchors.right: panelBody.left
+        }
+        Corners {
+            corner: 0
+            r: 24
+            fillColor: panelBody.color
+            anchors.top: panelBody.top
+            anchors.left: panelBody.right
+        }
+    }
+}
