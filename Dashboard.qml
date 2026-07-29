@@ -212,6 +212,7 @@ PanelWindow {
             fillColor: panelBody.color
             anchors.top: panelBody.top
             anchors.right: panelBody.left
+            opacity: panelBody.opacity
         }
         Corners {
             corner: 0
@@ -219,6 +220,7 @@ PanelWindow {
             fillColor: panelBody.color
             anchors.top: panelBody.top
             anchors.left: panelBody.right
+            opacity: panelBody.opacity
         }
     }
 }
