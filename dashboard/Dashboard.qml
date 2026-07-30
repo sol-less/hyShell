@@ -4,9 +4,11 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
+import qs.config
 import qs.services
 import qs.dashboard
 import qs.dashboard.panels
+import qs.dashboard.system
 
 PanelWindow {
     id: dashboard
