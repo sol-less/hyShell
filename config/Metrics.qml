@@ -23,7 +23,7 @@ Singleton {
             },
             music: {
                 width: 570,
-                height: 365
+                height: 225
             }
         })
 

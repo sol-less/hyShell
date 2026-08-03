@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 import qs.config
 import qs.bar.components
 
@@ -10,35 +11,47 @@ PanelWindow {
         right: true
     }
 
-    margins {
-        top: Metrics.bar_margin_top
-        left: 10
-        right: 10
-    }
-
-    implicitHeight: Metrics.bar_height
+    implicitHeight: Metrics.bar_height + 24
     color: "transparent"
+    WlrLayershell.exclusiveZone: Metrics.bar_height
 
     Rectangle {
-        anchors.fill: parent
+        id: barContainer
+        implicitHeight: Metrics.bar_height
+        implicitWidth: parent.width
         z: -99
         color: Colors.md3.surface_container
-        radius: 99
+
+        Corners {
+            r: 24
+            anchors.top: parent.bottom
+            anchors.left: parent.left
+            fillColor: parent.color
+        }
+
+        Corners {
+            corner: 1
+            r: 24
+            anchors.top: parent.bottom
+            anchors.right: parent.right
+            fillColor: parent.color
+        }
     }
 
     Workspaces {
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.left: barContainer.left
+        anchors.verticalCenter: barContainer.verticalCenter
         anchors.margins: 6
     }
 
     Clock {
-        anchors.centerIn: parent
+        anchors.centerIn: barContainer
+        height: barContainer.height - 12
     }
 
     PowerMenu {
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
+        anchors.right: barContainer.right
+        anchors.verticalCenter: barContainer.verticalCenter
         anchors.margins: 6
     }
 }

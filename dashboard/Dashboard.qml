@@ -14,6 +14,7 @@ PanelWindow {
     id: dashboard
 
     property bool surfaceVisible: false
+    readonly property string currentTabKey: States.visibleTabs[States.active_panel]?.key ?? "apps"
     visible: surfaceVisible
 
     property real openProgress: 0
@@ -67,7 +68,7 @@ PanelWindow {
         top: true
     }
     margins {
-        top: Metrics.bar_margin_top + Metrics.bar_height
+        top: Metrics.bar_height
     }
 
     color: "transparent"
@@ -76,19 +77,6 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.layer: WlrLayershell.Overlay
     WlrLayershell.keyboardFocus: States.dashboardOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-
-    IpcHandler {
-        target: "dashboard"
-        function toggle(): void {
-            States.toggle();
-        }
-        function open(): void {
-            States.open();
-        }
-        function close(): void {
-            States.close();
-        }
-    }
 
     HyprlandFocusGrab {
         id: focus_grab
@@ -114,7 +102,6 @@ PanelWindow {
             readonly property real targetHeight: Math.min(Math.max(contentHeight + Metrics.switcherReserve, Metrics.panelMinHeight), dashboard.height - 16)
             width: targetWidth
             height: targetHeight
-            opacity: dashboard.openProgress
 
             Behavior on width {
                 SpringAnimation {
@@ -142,20 +129,22 @@ PanelWindow {
                 anchors.fill: parent
                 anchors.margins: 10
                 spacing: 8
+
                 Loader {
                     id: panelLoader
                     asynchronous: true
                     Layout.fillWidth: true
                     Layout.fillHeight: true
+
                     sourceComponent: {
-                        switch (States.active_panel) {
-                        case 0:
+                        switch (currentTabKey) {
+                        case "apps":
                             return appLauncherPanel;
-                        case 1:
+                        case "wallpaper":
                             return wallpaperPanel;
-                        case 2:
+                        case "system":
                             return systemInfoPanel;
-                        case 3:
+                        case "music":
                             return musicPanel;
                         default:
                             return appLauncherPanel;

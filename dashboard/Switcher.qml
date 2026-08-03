@@ -1,36 +1,41 @@
 import QtQuick
 import QtQuick.Layouts
+import M3Shapes
 import qs.services
 import qs.config
 
 Rectangle {
-    readonly property var tabs: [
+    readonly property var allTabs: [
         {
-            "icon": "\ue5c3",
-            "label": "Apps"
+            key: "apps",
+            icon: "\ue5c3",
+            label: "Apps",
+            alwaysOn: true
         },
         {
-            "icon": "\ue3f4",
-            "label": "Wallpaper"
+            key: "wallpaper",
+            icon: "\ue3f4",
+            label: "Wallpaper"
         },
         {
-            "icon": "\ue30a",
-            "label": "System"
+            key: "system",
+            icon: "\ue30a",
+            label: "System"
         },
         {
-            "icon": "\ue405",
-            "label": "Music"
+            key: "music",
+            icon: "\ue405",
+            label: "Music"
         }
     ]
+    readonly property var tabs: States.visibleTabs
 
     function switcher_tabs_icon(i) {
         return tabs[i].icon;
     }
-
     function switcher_tabs_label(i) {
         return tabs[i].label;
     }
-
     Layout.fillWidth: true
     Layout.preferredHeight: 52
     radius: height / 2
@@ -42,7 +47,7 @@ Rectangle {
         spacing: 3
 
         Repeater {
-            model: 4
+            model: tabs.length
 
             delegate: Rectangle {
                 id: tab_slot
@@ -50,15 +55,14 @@ Rectangle {
                 required property int index
                 readonly property bool isActive: States.active_panel === index
                 property real firstIndex: (index === 0 || isActive) ? height / 2 : 6
-                property real lastIndex: (index === 3 || isActive) ? height / 2 : 6
-
+                property real lastIndex: (index === tabs.length - 1 || isActive) ? height / 2 : 6
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 bottomLeftRadius: firstIndex
                 topLeftRadius: firstIndex
                 bottomRightRadius: lastIndex
                 topRightRadius: lastIndex
-                color: isActive ? Colors.md3.secondary : Colors.md3.secondary_container
+                color: isActive ? Colors.roleColor("switcher") : Colors.md3.surface_container_highest
 
                 RowLayout {
                     anchors.centerIn: parent
@@ -74,7 +78,7 @@ Rectangle {
                             text: switcher_tabs_icon(tab_slot.index)
                             font.family: "Material Symbols Rounded"
                             font.pixelSize: 16
-                            color: tab_slot.isActive ? Colors.md3.surface_container_high : Colors.md3.on_surface_variant
+                            color: tab_slot.isActive ? Colors.roleColor("switcher", "on") : Colors.md3.on_surface_variant
                             Behavior on color {
                                 ColorAnimation {
                                     duration: 200
@@ -88,7 +92,7 @@ Rectangle {
                         font.family: "Google Sans"
                         font.weight: tab_slot.isActive ? 500 : 400
                         font.pixelSize: 12
-                        color: tab_slot.isActive ? Colors.md3.surface_container_high : Colors.md3.on_surface_variant
+                        color: tab_slot.isActive ? Colors.roleColor("switcher", "on") : Colors.md3.on_surface_variant
                         Behavior on color {
                             ColorAnimation {
                                 duration: 200
@@ -148,6 +152,24 @@ Rectangle {
                         epsilon: 0.25
                     }
                 }
+            }
+        }
+
+        MaterialShape {
+            Layout.fillHeight: true
+            Layout.preferredWidth: 50
+            shape: hoverHandler.hovered ? MaterialShape.Cookie7Sided : MaterialShape.Cookie4Sided
+            color: hoverHandler.hovered ? Colors.roleColor("switcher") : Colors.md3.surface_container_highest
+
+            Text {
+                anchors.centerIn: parent
+                font.family: "Material Symbols Rounded"
+                color: hoverHandler.hovered ? Colors.roleColor("switcher", "on") : Colors.md3.on_surface_variant
+                text: "\ue8b8"
+            }
+
+            HoverHandler {
+                id: hoverHandler
             }
         }
     }

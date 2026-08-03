@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import M3Shapes
 import qs.config
 import qs.services
 
@@ -28,20 +29,41 @@ Item {
                 }
             ]
 
-            delegate: Rectangle {
+            delegate: MaterialShape {
                 width: 28
                 height: 28
-                radius: 6
-                color: Colors.md3.surface_container_highest
+                color: mouseHandler.containsMouse ? Colors.roleColor("powermenu") : Colors.md3.surface_container_highest
+                scale: mouseHandler.containsMouse ? 1.2 : 1
+                shape: mouseHandler.containsMouse ? MaterialShape.Cookie7Sided : MaterialShape.Cookie4Sided
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 250
+                    }
+                }
+
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 250
+                        easing.type: Easing.OutQuad
+                    }
+                }
 
                 Text {
                     anchors.centerIn: parent
                     text: modelData.text
-                    color: Colors.md3.secondary
+                    color: mouseHandler.containsMouse ? Colors.md3.surface_container_highest : Colors.md3.secondary
                     font.family: "Material Symbols Rounded"
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 250
+                        }
+                    }
                 }
 
                 MouseArea {
+                    id: mouseHandler
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor

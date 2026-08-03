@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Hyprland
+import M3Shapes
 import qs.config
 
 Item {
@@ -16,62 +18,46 @@ Item {
 
         Repeater {
             model: 5
-
-            delegate: Rectangle {
+            delegate: Item {
                 id: dot_slot
                 required property int index
                 property bool focused: Hyprland.focusedWorkspace?.id === index + 1
-                property real firstIndex: focused ? height / 2 : (index === 0 ? height / 2 : height / 4)
-                property real lastIndex: focused ? height / 2 : (index === 4 ? height / 2 : height / 4)
+                height: 28
+                width: 28
 
-                Layout.preferredHeight: 28
-                Layout.preferredWidth: focused ? height * 2 : height + 6
-                bottomLeftRadius: firstIndex
-                topLeftRadius: firstIndex
-                bottomRightRadius: lastIndex
-                topRightRadius: lastIndex
-                color: focused ? Colors.md3.secondary : Colors.md3.surface_container_highest
+                MaterialShape {
+                    anchors.fill: parent
+                    shape: dot_slot.focused ? MaterialShape.Cookie7Sided : MaterialShape.Circle
+                    color: dot_slot.focused ? Colors.roleColor("workspaces") : Colors.md3.surface_container_highest
+                    animationDuration: 350
+                    animationEasing.type: Easing.OutBack
+                    rotation: mouseHandler.containsMouse ? -20 : 0
+                    scale: mouseHandler.containsMouse ? 1.1 : 1
 
-                Behavior on Layout.preferredWidth {
-                    NumberAnimation {
-                        duration: 250
-                        easing.type: Easing.OutQuad
+                    Behavior on rotation {
+                        NumberAnimation {
+                            duration: 250
+                            easing.type: Easing.OutQuad
+                        }
                     }
-                }
-                Behavior on color {
-                    ColorAnimation {
-                        duration: 250
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 250
+                            easing.type: Easing.OutQuad
+                        }
                     }
-                }
-
-                Behavior on topLeftRadius {
-                    NumberAnimation {
-                        duration: 250
-                        easing.type: Easing.OutQuad
-                    }
-                }
-                Behavior on topRightRadius {
-                    NumberAnimation {
-                        duration: 250
-                        easing.type: Easing.OutQuad
-                    }
-                }
-                Behavior on bottomLeftRadius {
-                    NumberAnimation {
-                        duration: 250
-                        easing.type: Easing.OutQuad
-                    }
-                }
-                Behavior on bottomRightRadius {
-                    NumberAnimation {
-                        duration: 250
-                        easing.type: Easing.OutQuad
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 250
+                        }
                     }
                 }
 
                 MouseArea {
+                    id: mouseHandler
                     anchors.fill: parent
-                    onClicked: Hyprland.dispatch("hl.dsp.focus({ workspace = " + (dot_slot.index + 1) + " })")
+                    hoverEnabled: true
+                    onClicked: Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.focus({workspace = ", (dot_slot.index + 1).toString(), "})"])
                 }
             }
         }
