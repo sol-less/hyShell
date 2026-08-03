@@ -44,6 +44,7 @@
 * `ttf-roboto`
 * `git`
 * `yay` *(or your preferred AUR helper — required for the AUR packages above)*
+* `hyprlock`
 
 ---
 
@@ -61,7 +62,7 @@ git clone https://github.com/sol-less/yamd3s/ ~/.config/quickshell
 Install dependencies:
 
 ```bash
-yay -S quickshell-git matugen qt6-m3shapes-git ttf-material-symbols-variable ttf-roboto
+yay -S quickshell-git matugen qt6-m3shapes-git ttf-material-symbols-variable ttf-roboto hyprlock
 ```
 
 Start the shell:
