@@ -27,7 +27,7 @@
 - **Persisted theme roles** — assign which M3 color role (primary/secondary/tertiary) each module uses, saved to `config/user_config.json`
 - **Real shape morphing** — workspace focus indicators, the loading spinner, and album art masks all use genuine Material 3 polygon interpolation, not approximated paths
 - **Concave corner system** — the dashboard visually "flows" out of the bar with a hand-built concave notch (square-minus-circle via `oddEven` fill), synced to the open/close animation
-- **Full dashboard** — App Launcher, Wallpaper picker (with a hidden Konami-code easter egg 👀), System Info (CPU/disk/battery/uptime/package counts), and a Music panel with live MPRIS playback controls
+- **Full dashboard** — App Launcher, Wallpaper picker (with something... 👀), System Info (CPU/disk/battery/uptime/package counts), and a Music panel with live MPRIS playback controls
 - **Spring-based motion** throughout — corner radii, pill widths, and shape transitions all use tuned spring physics rather than flat easing curves
 - **Toggleable dashboard tabs** — enable/disable Wallpaper, System, and Music panels individually (Apps is always available)
 
