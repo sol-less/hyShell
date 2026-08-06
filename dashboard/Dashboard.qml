@@ -22,8 +22,8 @@ PanelWindow {
 
     Connections {
         target: States
-        function onDashboardOpenChanged() {
-            if (States.dashboardOpen) {
+        function onDashboardActiveChanged() {
+            if (States.dashboardActive) {
                 dashboard.surfaceVisible = true;
                 openAnim.start();
             } else {
@@ -81,6 +81,12 @@ PanelWindow {
     HyprlandFocusGrab {
         id: focus_grab
         windows: [dashboard]
+
+        onCleared: {
+            if (States.dashboardActive) {
+                States.dashboardClose();
+            }
+        }
     }
 
     Item {

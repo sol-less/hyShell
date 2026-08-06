@@ -6,45 +6,69 @@ import Quickshell.Services.Mpris
 Singleton {
     id: root
 
-    readonly property var player: Mpris.players.values.length > 0 ? Mpris.players.values[0] : null
+    readonly property MprisPlayer player: {
+        const count = Mpris.players.count;
+        const list = Mpris.players.values;
 
-    readonly property var track: ({
-            title: player?.trackTitle || "Unknown Title",
-            artist: player?.trackArtist || "Unknown Artist",
-            album: player?.trackAlbum || "",
-            albumArtist: player?.trackAlbumArtist || "",
-            artUrl: player?.trackArtUrl || "",
-            trackId: player?.trackId || ""
-        })
+        if (!list || list.length === 0)
+            return null;
 
-    readonly property var playback: ({
-            isPlaying: player?.isPlaying ?? false,
-            state: player?.playbackState ?? MprisPlaybackState.Stopped,
-            position: player?.position ?? 0,
-            length: player?.length ?? 0,
-            shuffle: player?.shuffle ?? false,
-            loopState: player?.loopState ?? MprisLoopState.None
-        })
+        for (let i = 0; i < list.length; i++) {
+            const p = list[i];
+            if (!p)
+                continue;
 
-    readonly property var capabilities: ({
-            canControl: player?.canControl ?? false,
-            canGoNext: player?.canGoNext ?? false,
-            canGoPrevious: player?.canGoPrevious ?? false,
-            canTogglePlaying: player?.canTogglePlaying ?? false,
-            canSeek: player?.canSeek ?? false,
-            shuffleSupported: player?.shuffleSupported ?? false,
-            volumeSupported: player?.volumeSupported ?? false,
-            lengthSupported: player?.lengthSupported ?? false
-        })
+            const dbus = (p.dbusName || "").toLowerCase();
+            const identity = (p.identity || "").toLowerCase();
+            const entry = (p.desktopEntry || "").toLowerCase();
 
-    readonly property real progress: playback.length > 0 ? playback.position / playback.length : 0
+            if (dbus.includes("spotify") || identity.includes("spotify") || entry.includes("spotify")) {
+                return p;
+            }
+        }
 
-    // required by MPRIS spec: position isn't reactive on its own,
-    // must be manually re-polled to get smooth/updated values
-    Timer {
-        interval: 1000
+        return null;
+    }
+
+    // Direct top-level bindings catch player.positionChanged() signal triggers
+    readonly property real rawPosition: root.player ? root.player.position : 0
+    readonly property real rawLength: root.player ? root.player.length : 0
+
+    readonly property QtObject track: QtObject {
+        readonly property string title: root.player ? (root.player.trackTitle || "Unknown Title") : "Unknown Title"
+        readonly property string artist: root.player ? (root.player.trackArtist || "Unknown Artist") : "Unknown Artist"
+        readonly property string album: root.player ? root.player.trackAlbum : ""
+        readonly property string albumArtist: root.player ? root.player.trackAlbumArtist : ""
+        readonly property string artUrl: root.player ? root.player.trackArtUrl : ""
+        readonly property int uniqueId: root.player ? root.player.uniqueId : 0
+    }
+
+    readonly property QtObject playback: QtObject {
+        readonly property bool isPlaying: root.player ? root.player.isPlaying : false
+        readonly property int state: root.player ? root.player.playbackState : MprisPlaybackState.Stopped
+        readonly property real position: root.rawPosition
+        readonly property real length: root.rawLength
+        readonly property bool shuffle: root.player ? root.player.shuffle : false
+        readonly property int loopState: root.player ? root.player.loopState : MprisLoopState.None
+    }
+
+    readonly property QtObject capabilities: QtObject {
+        readonly property bool canControl: root.player ? root.player.canControl : false
+        readonly property bool canGoNext: root.player ? root.player.canGoNext : false
+        readonly property bool canGoPrevious: root.player ? root.player.canGoPrevious : false
+        readonly property bool canTogglePlaying: root.player ? root.player.canTogglePlaying : false
+        readonly property bool canSeek: root.player ? root.player.canSeek : false
+        readonly property bool shuffleSupported: root.player ? root.player.shuffleSupported : false
+        readonly property bool volumeSupported: root.player ? root.player.volumeSupported : false
+        readonly property bool lengthSupported: root.player ? root.player.lengthSupported : false
+    }
+
+    // Reactive progress ratio (0.0 to 1.0)
+    readonly property real progress: rawLength > 0 ? rawPosition / rawLength : 0
+
+    // FrameAnimation updates player.positionChanged() on every screen refresh
+    FrameAnimation {
         running: root.player !== null && root.playback.isPlaying
-        repeat: true
         onTriggered: {
             if (root.player) {
                 root.player.positionChanged();

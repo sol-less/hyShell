@@ -8,10 +8,11 @@ Singleton {
     readonly property string userConfigPath: Quickshell.shellDir + "/config/user_config.json"
 
     // ---- dashboard open/close ----
-    property bool dashboardOpen: false
+    property bool dashboardActive: false
     property int active_panel: 0
+    property bool lockscreenActive: false
 
-    property var dashboardActive: ({
+    property var dashboardActiveTabs: ({
             wallpaper: true,
             system: true,
             music: true
@@ -40,7 +41,7 @@ Singleton {
             label: "Music"
         }
     ]
-    readonly property var visibleTabs: allTabs.filter(t => t.alwaysOn || dashboardActive[t.key])
+    readonly property var visibleTabs: allTabs.filter(t => t.alwaysOn || dashboardActiveTabs[t.key])
 
     onVisibleTabsChanged: {
         if (active_panel >= visibleTabs.length) {
@@ -51,20 +52,31 @@ Singleton {
     function set_panel(index) {
         active_panel = index;
     }
-    function toggle() {
-        dashboardOpen = !dashboardOpen;
+    function dashboardToggle() {
+        if (dashboardActive) {
+            dashboardClose();
+        } else {
+            dashboardOpen();
+        }
     }
-    function open() {
-        dashboardOpen = true;
+    function dashboardOpen() {
+        dashboardActive = true;
     }
-    function close() {
-        dashboardOpen = false;
+    function dashboardClose() {
+        dashboardActive = false;
+        active_panel = 0;
+    }
+    function toggleLock() {
+        lockscreenActive = !lockscreenActive;
+        if (lockscreenActive) {
+            dashboardClose();
+        }
     }
 
     function setTabActive(tabKey, enabled) {
-        const updated = Object.assign({}, dashboardActive);
+        const updated = Object.assign({}, dashboardActiveTabs);
         updated[tabKey] = enabled;
-        dashboardActive = updated;
+        dashboardActiveTabs = updated;
         saveActiveTabs();
     }
 
@@ -75,7 +87,7 @@ Singleton {
         } catch (e) {
             // file missing/invalid, start fresh
         }
-        fullConfig.activated_tabs = root.dashboardActive;
+        fullConfig.activated_tabs = root.dashboardActiveTabs;
         activeTabsFile.setText(JSON.stringify(fullConfig, null, 2));
     }
 
@@ -101,7 +113,7 @@ Singleton {
             try {
                 const data = JSON.parse(text());
                 if (data.activated_tabs) {
-                    root.dashboardActive = data.activated_tabs;
+                    root.dashboardActiveTabs = data.activated_tabs;
                 }
             } catch (e) {
                 console.warn("States.qml: cannot parse user_config.json, using defaults");

@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import M3Shapes
 import qs.services
 import qs.config
+import qs.services
 
 Rectangle {
     readonly property var allTabs: [
@@ -170,6 +171,11 @@ Rectangle {
 
             HoverHandler {
                 id: hoverHandler
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: States.toggleLock()
             }
         }
     }

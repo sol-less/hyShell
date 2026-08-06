@@ -24,12 +24,12 @@ Item {
 
         function activate_app(app) {
             app.execute();
-            States.close();
+            States.dashboardClose();
         }
 
         Search {
             id: search_bar
-            onEscape_pressed: States.close()
+            onEscape_pressed: States.dashboardClose()
             onMove_down: app_list.incrementCurrentIndex()
             onMove_up: app_list.decrementCurrentIndex()
             onConfirm: {

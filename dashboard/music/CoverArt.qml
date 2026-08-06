@@ -12,23 +12,67 @@ Item {
     readonly property var shapePool: [MaterialShape.Cookie4Sided, MaterialShape.Cookie6Sided, MaterialShape.Cookie9Sided, MaterialShape.Sunny, MaterialShape.VerySunny, MaterialShape.Flower, MaterialShape.Boom, MaterialShape.Pentagon, MaterialShape.Gem, MaterialShape.Heart, MaterialShape.Squircle]
     property int currentShapeIndex: Math.floor(Math.random() * shapePool.length)
 
+    property string oldArtUrl: ""
+    property string newArtUrl: ""
+
+    Component.onCompleted: {
+        root.newArtUrl = Variable.track.artUrl;
+    }
+
     Connections {
-        target: Variable
-        function onTrackChanged() {
+        target: Variable.track
+        function onArtUrlChanged() {
+            const incomingUrl = Variable.track.artUrl;
+
+            if (!incomingUrl || incomingUrl === root.newArtUrl)
+                return;
+
+            root.oldArtUrl = root.newArtUrl;
+            root.newArtUrl = incomingUrl;
+
             root.currentShapeIndex = Math.floor(Math.random() * root.shapePool.length);
+
+            newImage.opacity = 0;
+            fadeAnimation.restart();
         }
     }
 
-    Image {
-        id: imageHandler
-        source: Variable.track.artUrl
+    Item {
+        id: imageContainer
         anchors.fill: parent
-        fillMode: Image.PreserveAspectCrop
-        asynchronous: true
-        sourceSize.width: 160
-        sourceSize.height: 160
         layer.enabled: true
         visible: false
+
+        Image {
+            id: oldImage
+            anchors.fill: parent
+            source: root.oldArtUrl
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            sourceSize.width: 160
+            sourceSize.height: 160
+        }
+
+        Image {
+            id: newImage
+            anchors.fill: parent
+            source: root.newArtUrl
+            fillMode: Image.PreserveAspectCrop
+            asynchronous: true
+            sourceSize.width: 160
+            sourceSize.height: 160
+            opacity: 1.0
+        }
+    }
+
+    NumberAnimation {
+        id: fadeAnimation
+        target: newImage
+        property: "opacity"
+        from: 0.0
+        to: 1.0
+        duration: 400
+        easing.type: Easing.InOutQuad
     }
 
     MaterialShape {
@@ -42,8 +86,8 @@ Item {
     }
 
     MultiEffect {
-        anchors.fill: imageHandler
-        source: imageHandler
+        anchors.fill: parent
+        source: imageContainer
         maskEnabled: true
         maskSource: materialHandler
     }

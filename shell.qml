@@ -5,6 +5,7 @@ import Quickshell.Io
 import qs.bar
 import qs.dashboard
 import qs.services
+import qs.lockscreen
 
 ShellRoot {
     Variants {
@@ -18,20 +19,29 @@ ShellRoot {
 
     Dashboard {
         id: dashboard
+
+        IpcHandler {
+            target: "dashboard"
+            function toggle(): void {
+                States.dashboardToggle();
+            }
+            function open(): void {
+                States.dashboardOpenSet();
+            }
+            function close(): void {
+                States.dashboardClose();
+            }
+        }
     }
 
     IpcHandler {
-        target: "dashboard"
-        function toggle(): void {
-            States.toggle();
-        }
-        function open(): void {
-            States.open();
-        }
-        function close(): void {
-            States.close();
+        target: "lock"
+        function lock(): void {
+            States.toggleLock();
         }
     }
 
     LoadingOverlay {}
+
+    LockOverlay {}
 }

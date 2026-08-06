@@ -125,7 +125,7 @@ Item {
                     hoverEnabled: true
                     onClicked: {
                         MatugenService.applyWallpaper(modelData);
-                        States.close();
+                        States.dashboardClose();
                     }
                 }
             }

@@ -32,7 +32,7 @@ Singleton {
 
     Timer {
         interval: 2000
-        running: States.dashboardOpen
+        running: States.dashboardActive
         repeat: true
         triggeredOnStart: true
         onTriggered: root.refresh()

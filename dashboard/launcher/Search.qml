@@ -22,7 +22,7 @@ Rectangle {
 
     Connections {
         target: States
-        function onDashboardOpenChanged() {
+        function onDashboardActiveChanged() {
             if (!States.dashboardOpen) {
                 root.clear();
             }

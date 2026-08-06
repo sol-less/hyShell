@@ -11,6 +11,6 @@ Singleton {
     }
 
     function lock() {
-        Quickshell.execDetached(["hyprlock"]);
+        Quickshell.execDetached(["qs", "ipc", "call", "lock", "lock"]);
     }
 }
